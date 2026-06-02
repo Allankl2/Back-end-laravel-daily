@@ -1,0 +1,95 @@
+{
+  "_type": "export",
+  "exportFormat": 4,
+  "exportDate": "2026-05-20",
+  "exportSource": "insomnia.desktop.app",
+  "resources": [
+    {
+      "_id": "wrk_001",
+      "_type": "workspace",
+      "name": "Meu-pessoal API",
+      "description": "Rotas da API Laravel com Sanctum",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_001",
+      "_type": "environment",
+      "parentId": "wrk_001",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8000/api",
+        "token": ""
+      }
+    },
+    {
+      "_id": "fld_001",
+      "_type": "request_group",
+      "parentId": "wrk_001",
+      "name": "Status"
+    },
+    {
+      "_id": "req_001",
+      "_type": "request",
+      "parentId": "fld_001",
+      "name": "Status da API",
+      "method": "GET",
+      "url": "{{ _.base_url }}/",
+      "headers": [
+        { "name": "Accept", "value": "application/json" }
+      ],
+      "body": {}
+    },
+    {
+      "_id": "fld_002",
+      "_type": "request_group",
+      "parentId": "wrk_001",
+      "name": "Auth"
+    },
+    {
+      "_id": "req_002",
+      "_type": "request",
+      "parentId": "fld_002",
+      "name": "Register",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/register",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Accept", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"name\": \"Allan\",\n\t\"email\": \"allan@teste.com\",\n\t\"password\": \"password123\",\n\t\"password_confirmation\": \"password123\"\n}"
+      }
+    },
+    {
+      "_id": "req_003",
+      "_type": "request",
+      "parentId": "fld_002",
+      "name": "Login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Accept", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"email\": \"test@example.com\",\n\t\"password\": \"password123\"\n}"
+      }
+    },
+    {
+      "_id": "req_004",
+      "_type": "request",
+      "parentId": "fld_002",
+      "name": "Logout",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/logout",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {}
+    }
+  ]
+}
