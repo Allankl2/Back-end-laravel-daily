@@ -19,8 +19,14 @@ class AuthController extends Controller
         $data = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+            'password' => 'required|string|min:8',
+        ],
+        
+            ['password.confirmed' => 'A confirmação da senha não corresponde.',
+            'password.min' => 'A senha deve conter no mínimo 8 caracteres.',
+            "email.email" => 'O campo email deve conter um endereço de email válido.',
+            ]
+        );
 
         try {
             $result = $this->authService->register($data);

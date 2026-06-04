@@ -26,9 +26,10 @@ class AuthService
                     throw new \RuntimeException('Este email já está cadastrado.');
                 }
 
-                $user->name     = $data['name'];
-                $user->password = $data['password'];
-                $user->save();
+                $this->userRepository->update($user, [
+                    'name'     => $data['name'],
+                    'password' => $data['password'],
+                ]);
             } else {
                 $user = $this->userRepository->create($data);
             }
@@ -57,11 +58,9 @@ class AuthService
 
         $this->otpService->verify($email, $code);
 
-        $user->email_verified_at = now();
-        $user->save();
-
-        $user->tokens()->delete();
-        $token = $user->createToken('auth_token', ['*'], now()->addDay())->plainTextToken;
+        $this->userRepository->markEmailVerified($user);
+        $this->userRepository->revokeAllTokens($user);
+        $token = $this->userRepository->createToken($user);
 
         Log::info('Usuário verificado via OTP.', ['user_id' => $user->id, 'email' => $user->email]);
 
@@ -78,9 +77,8 @@ class AuthService
             throw new AuthorizationException('Credenciais inválidas.');
         }
 
-        $user->tokens()->delete();
-
-        $token = $user->createToken('auth_token', ['*'], now()->addDay())->plainTextToken;
+        $this->userRepository->revokeAllTokens($user);
+        $token = $this->userRepository->createToken($user);
 
         Log::info('Usuário autenticado.', ['user_id' => $user->id, 'email' => $user->email]);
 
@@ -89,15 +87,13 @@ class AuthService
 
     public function logout(User $user): void
     {
-        $token = $user->currentAccessToken();
-
-        if (! $token) {
+        if (! $user->currentAccessToken()) {
             Log::warning('Tentativa de logout sem token válido.', ['user_id' => $user->id]);
 
             throw new \RuntimeException('Token não encontrado.');
         }
 
-        $token->delete();
+        $this->userRepository->revokeCurrentToken($user);
 
         Log::info('Usuário deslogado.', ['user_id' => $user->id]);
     }

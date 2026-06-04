@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -17,6 +18,8 @@ class AuthTest extends TestCase
 
     public function test_usuario_pode_se_registrar(): void
     {
+        Mail::fake();
+
         $response = $this->postJson('/api/auth/register', [
             'name'                  => 'Allan',
             'email'                 => 'allan@teste.com',
@@ -25,17 +28,17 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-                 ->assertJsonStructure([
-                     'user'  => ['id', 'name', 'email'],
-                     'token',
-                 ]);
+                 ->assertJson(['message' => 'Código OTP enviado para seu email. Verifique sua caixa de entrada.']);
 
         $this->assertDatabaseHas('users', ['email' => 'allan@teste.com']);
     }
 
     public function test_registro_falha_com_email_duplicado(): void
     {
-        User::factory()->create(['email' => 'allan@teste.com']);
+        User::factory()->create([
+            'email'             => 'allan@teste.com',
+            'email_verified_at' => now(),
+        ]);
 
         $response = $this->postJson('/api/auth/register', [
             'name'                  => 'Allan',
@@ -45,7 +48,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+                 ->assertJson(['message' => 'Este email já está cadastrado.']);
     }
 
     public function test_registro_falha_sem_campos_obrigatorios(): void
